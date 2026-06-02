@@ -7,11 +7,12 @@
 ## 📋 Table of Contents
 1. [Prerequisites](#prerequisites)
 2. [Quick Start](#quick-start)
-3. [Sequential Setup Guide](#sequential-setup-guide)
-4. [Publisher–Subscriber Test](#publishersubscriber-test)
-5. [Daily Workflow](#daily-workflow)
-6. [Common Errors & Fixes](#common-errors--fixes)
-7. [Script Reference](#script-reference)
+3. [Important Notes After Installation](#important-notes-after-installation)
+4. [Sequential Setup Guide](#sequential-setup-guide)
+5. [Publisher–Subscriber Test](#publishersubscriber-test)
+6. [Daily Workflow](#daily-workflow)
+7. [Common Errors & Fixes](#common-errors--fixes)
+8. [Script Reference](#script-reference)
 
 ---
 
@@ -54,10 +55,53 @@ chmod +x install_ros2_docker.sh ros2_demo_test.sh
 
 # 4 — Install Docker + ROS 2 (takes a few minutes)
 bash install_ros2_docker.sh
+```
 
+> ⚠️ **After the install script finishes — you MUST log out and log back in once:**
+> ```bash
+> exit                              # log out of Pi
+> ssh aadi_1234@<PI_IP_ADDRESS>    # log back in
+> ```
+> This activates the `docker` group so you can use Docker **without** `sudo`.
+
+```bash
 # 5 — Run the Publisher–Subscriber demo test
 bash ros2_demo_test.sh
 ```
+
+---
+
+## Important Notes After Installation
+
+### 🔑 Docker Group — One-time Re-login Required
+
+The install script automatically adds your user (`aadi_1234`) to the `docker` group so you can run Docker **without `sudo`**. However, this change **only takes effect after you log out and log back in**.
+
+```bash
+# Step 1 — After install_ros2_docker.sh finishes, exit the SSH session
+exit
+
+# Step 2 — SSH back in
+ssh aadi_1234@<PI_IP_ADDRESS>
+
+# Step 3 — Now you can use docker WITHOUT sudo
+docker ps
+docker exec -it ros2_humble bash
+```
+
+> **Why does this happen?**
+> Linux group membership is read at login time. Adding a user to a group mid-session doesn't update the running shell. A fresh login picks up the new group.
+
+> **What if I skip the re-login?**
+> The script uses `sudo docker` internally so installation still completes correctly.
+> But until you re-login, you'll get `permission denied` errors when running `docker` without `sudo`.
+
+### ⚡ Quick Fix (without re-login)
+If you don't want to log out right away, run this in the current session:
+```bash
+newgrp docker
+```
+This opens a new shell with the `docker` group active — valid only for that terminal session.
 
 ---
 
@@ -228,18 +272,20 @@ ros2 run demo_nodes_cpp listener
 
 Run these commands **every time you power on the Raspberry Pi**:
 
+> ✅ If you have already done the one-time re-login after installation, you can use `docker` **without** `sudo`.
+
 ```bash
 # 1 — SSH into Pi
 ssh aadi_1234@10.139.37.39
 
 # 2 — Check container status
-sudo docker ps
+docker ps
 
 # 3 — Start container if it is stopped
-sudo docker start ros2_humble
+docker start ros2_humble
 
 # 4 — Enter the container
-sudo docker exec -it ros2_humble bash
+docker exec -it ros2_humble bash
 
 # 5 — Enable ROS 2
 source /opt/ros/humble/setup.bash
@@ -247,6 +293,8 @@ source /opt/ros/humble/setup.bash
 # 6 — Verify
 echo $ROS_DISTRO   # → humble
 ```
+
+> ⚠️ If `docker: permission denied` appears, either run `newgrp docker` or prefix commands with `sudo` until you re-login.
 
 ---
 
@@ -268,6 +316,28 @@ apt install -y ros-humble-demo-nodes-cpp
 - ✅ Verify Wi-Fi connection on the Pi
 - ✅ Re-check the IP address (it may have changed)
 - ✅ Try `ping <PI_IP>` from your laptop
+
+### Error 5 — `docker: permission denied` / `Got permission denied while trying to connect`
+
+This happens when your user is not yet active in the `docker` group.
+
+**Fix A — Re-login (permanent fix):**
+```bash
+exit
+ssh aadi_1234@<PI_IP_ADDRESS>
+```
+
+**Fix B — Current session only:**
+```bash
+newgrp docker
+```
+
+**Fix C — Use sudo (always works):**
+```bash
+sudo docker exec -it ros2_humble bash
+```
+
+---
 
 ### Error 4 — Container not running
 ```bash
