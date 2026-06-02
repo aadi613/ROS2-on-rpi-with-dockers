@@ -118,15 +118,86 @@ During flashing, enable:
 
 ---
 
-### Step 2 — Find Raspberry Pi IP
-Check your router's connected devices list, or use:
-```bash
-# From your laptop (Windows PowerShell or Ubuntu terminal)
-ping raspberrypi.local
-```
-Example IP: `10.139.37.39`
+### Step 2 — Find Raspberry Pi IP Address
+
+> 📺 **Prefer watching instead of reading?** See the [YouTube reference links](#youtube-reference) at the end of this section.
+
+There are **3 methods** — try them in order:
 
 ---
+
+#### ✅ Method 1 — `ping` with hostname (Easiest, try this first)
+
+**Windows (PowerShell / CMD) and Ubuntu Terminal:**
+```bash
+ping raspberrypi.local
+```
+If it replies, the IP will show in the output, e.g.:
+```
+Reply from 10.139.37.39: bytes=32 time=4ms TTL=64
+```
+> ⚠️ This only works if mDNS is active on your network. If it times out, use Method 2.
+
+---
+
+#### ✅ Method 2 — Router Device List (Most Reliable)
+
+1. Find your **router's IP (gateway):**
+
+   **Windows** — open CMD / PowerShell:
+   ```cmd
+   ipconfig
+   ```
+   Look for **Default Gateway**, e.g. `192.168.1.1`
+
+   **Ubuntu** — open Terminal:
+   ```bash
+   ip route | grep default
+   ```
+   Look for the IP after `via`, e.g. `192.168.1.1`
+
+2. Type that IP into your **browser** → log in with your router credentials
+3. Find a page called **"Connected Devices"**, **"DHCP Clients"**, or **"Device List"**
+4. Look for a device named **`raspberrypi`** or your custom hostname → that's your Pi's IP ✅
+
+---
+
+#### ✅ Method 3 — Network Scan with `nmap`
+
+**Windows** — Download & install [nmap](https://nmap.org/download.html), then in CMD:
+```cmd
+nmap -sn 192.168.1.0/24
+```
+
+**Ubuntu** — Install and run:
+```bash
+sudo apt install nmap
+sudo nmap -sn 192.168.1.0/24
+```
+
+> Replace `192.168.1.0/24` with your actual subnet (from `ipconfig` / `ip addr`).
+
+Look for a line mentioning **"Raspberry Pi Trading"** — that row has your Pi's IP.
+
+**Windows alternative** — [Advanced IP Scanner](https://www.advanced-ip-scanner.com/) (free GUI tool):
+1. Download and run it — no install needed
+2. Click **Scan**
+3. Look for `raspberrypi` in the device list
+
+---
+
+#### Example IP
+```
+10.139.37.39
+```
+
+---
+
+#### 📺 YouTube Reference
+
+> **Best video for this step (Windows + Ubuntu, ~5 mins):**
+> ▶️ [How to Find Raspberry Pi IP Address — Full Guide](https://youtu.be/NOqunlnD7Cc?si=srVvQl-hTAeM4d1H)
+
 
 ### Step 3 — SSH into Raspberry Pi
 ```bash
