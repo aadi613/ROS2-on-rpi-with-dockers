@@ -271,6 +271,7 @@ exit
 
 ### Step 11 — Re-enter Existing Container
 ```bash
+sudo docker start ros2_humble
 sudo docker exec -it ros2_humble bash
 ```
 
