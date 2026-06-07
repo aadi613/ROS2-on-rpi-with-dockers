@@ -7,14 +7,14 @@
 #  Usage     : bash install_ros2_docker.sh
 # =============================================================================
 
-set -e  # Exit immediately on any error
+set -e
 
 # ── Colour helpers ────────────────────────────────────────────────────────────
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
 CYAN='\033[0;36m'
-NC='\033[0m'  # No Colour
+NC='\033[0m'
 
 info()    { echo -e "${CYAN}[INFO]${NC}  $*"; }
 success() { echo -e "${GREEN}[OK]${NC}    $*"; }
@@ -71,73 +71,11 @@ sudo docker run --rm hello-world | grep -q "Hello from Docker" \
     && success "Docker is working correctly!" \
     || error "Docker hello-world test failed."
 
-# ── Step 7 : Pull ROS 2 Humble image ─────────────────────────────────────────
-info "Step 7 — Pulling ROS 2 Humble Docker image (this may take a few minutes)..."
-sudo docker pull ros:humble-ros-base
-success "ROS 2 Humble image pulled successfully."
-
-# ── Step 8 : Create the ROS 2 container ──────────────────────────────────────
-info "Step 8 — Creating ROS 2 container 'ros2_humble'..."
-
-if sudo docker ps -a --format '{{.Names}}' | grep -q "^ros2_humble$"; then
-    warn "Container 'ros2_humble' already exists. Skipping creation."
-else
-    sudo docker create -it --name ros2_humble ros:humble-ros-base
-    success "Container 'ros2_humble' created."
-fi
-
-# ── Step 9 : Start the container & install demo nodes ────────────────────────
-info "Step 9 — Starting container and installing demo nodes..."
-sudo docker start ros2_humble
-
-sudo docker exec ros2_humble bash -c "
-    apt-get update -qq && \
-    apt-get install -y ros-humble-demo-nodes-cpp -qq && \
-    echo 'Demo nodes installed.'
-"
-success "ros-humble-demo-nodes-cpp installed inside container."
-
-# ── Step 10 : Verify ROS 2 ───────────────────────────────────────────────────
-info "Step 10 — Verifying ROS 2 installation..."
-ROS_DISTRO_CHECK=$(sudo docker exec ros2_humble bash -c "source /opt/ros/humble/setup.bash && echo \$ROS_DISTRO")
-if [ "$ROS_DISTRO_CHECK" = "humble" ]; then
-    success "ROS 2 Humble is correctly installed. ROS_DISTRO=$ROS_DISTRO_CHECK"
-else
-    error "ROS 2 verification failed. Got: '$ROS_DISTRO_CHECK'"
-fi
-
 # ── Done ──────────────────────────────────────────────────────────────────────
 echo ""
 echo -e "${GREEN}============================================================${NC}"
-echo -e "${GREEN}   Installation Complete!${NC}"
+echo -e "${GREEN}   Docker Setup Complete!${NC}"
 echo -e "${GREEN}============================================================${NC}"
 echo ""
-echo -e "  Container name : ${CYAN}ros2_humble${NC}"
-echo -e "  Enable ROS 2   : ${CYAN}source /opt/ros/humble/setup.bash${NC}"
-echo ""
-echo -e "  Run the demo   : ${CYAN}bash ros2_demo_test.sh${NC}"
-echo ""
-
-# ── IMPORTANT: Re-login notice ────────────────────────────────────────────────
-echo -e "${YELLOW}============================================================${NC}"
-echo -e "${YELLOW}   ⚠  ACTION REQUIRED — READ BEFORE CONTINUING${NC}"
-echo -e "${YELLOW}============================================================${NC}"
-echo ""
-echo -e "${YELLOW}  You have been added to the 'docker' group.${NC}"
-echo -e "${YELLOW}  This only takes effect after you log out and log back in.${NC}"
-echo ""
-echo -e "  ${GREEN}Step 1${NC} — Log out now:"
-echo -e "           ${CYAN}exit${NC}"
-echo ""
-echo -e "  ${GREEN}Step 2${NC} — SSH back in:"
-echo -e "           ${CYAN}ssh ${USER}@<PI_IP_ADDRESS>${NC}"
-echo ""
-echo -e "  ${GREEN}Step 3${NC} — Now use Docker WITHOUT sudo:"
-echo -e "           ${CYAN}docker ps${NC}"
-echo -e "           ${CYAN}docker exec -it ros2_humble bash${NC}"
-echo ""
-echo -e "  ${YELLOW}Quick fix (current session only, no re-login):${NC}"
-echo -e "           ${CYAN}newgrp docker${NC}"
-echo ""
-echo -e "${YELLOW}============================================================${NC}"
+echo -e "${YELLOW}  Re-login or run 'newgrp docker' before next steps.${NC}"
 echo ""
